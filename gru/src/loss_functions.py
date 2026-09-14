@@ -174,14 +174,3 @@ def pp_loss(y_true, y_pred):
 
     return loss
  
-##### Test #######
-# dat = np.load(r"/Users/xl3138/workspaces/extreme_loss/gru/yamaska_data/data_D/GRU333/x_train.npy")
-# # dat_path = r"/Users/xl3138/workspaces/extreme_loss/gwn/milandre_data/data_4H/Milandre_df_4H.csv"
-
-# y_true = dat[1,:,:]
-# y_true = tf.convert_to_tensor(y_true)
-
-# y_pred = dat[1,:,:]+0.1
-# y_pred = tf.convert_to_tensor(y_pred)
-
-# loss = dense_loss(y_true, y_pred)   

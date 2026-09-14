@@ -120,11 +120,11 @@ def generate_train_val_test(args):
     
     
     if args.scale_data == True:
-        # df = standardize_df(f"{args.data_path}/{args.df_path}", loader="train")
-        # df_test = standardize_df(f"{args.data_path}/{args.df_path}", loader="test")
+        df = standardize_df(f"{args.data_path}/{args.df_path}", loader="train")
+        df_test = standardize_df(f"{args.data_path}/{args.df_path}", loader="test")
         
-        df = log_df(f"{args.data_path}/{args.df_path}", loader="train")
-        df_test = log_df(f"{args.data_path}/{args.df_path}", loader="test")
+        #df = log_df(f"{args.data_path}/{args.df_path}", loader="train")
+        #df_test = log_df(f"{args.data_path}/{args.df_path}", loader="test")
         
     else:
         df = pd.read_csv(f"{args.data_path}/{args.df_train}", index_col=0, parse_dates=True)
