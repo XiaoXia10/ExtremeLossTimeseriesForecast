@@ -16,10 +16,12 @@ Plotting is intentionally NOT run here - run plot_results.py separately.
 --------------------------------------------------------------------------------
 USAGE
 --------------------------------------------------------------------------------
-    python gru/src/test.py --data-root /path/to/data [options]
+    python gru/src/test.py [options]
 
-The reviewer downloads the datasets (see README) and passes their location with
---data-root. The expected layout underneath it is:
+--data-root defaults to the repo's own gru/ data folder, so the script runs
+with no flags at all. Pass --data-root /path/to/data to point at a different
+copy (e.g. a reviewer's downloaded dataset - see README). The expected layout
+underneath it is:
 
     <data-root>/<dataset>/data_<freq>/train_val_data.csv
     <data-root>/<dataset>/data_<freq>/test_data.csv
@@ -40,6 +42,7 @@ import pickle
 import random
 import traceback
 from os.path import join, isfile
+#import tensorflow 
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 if HERE not in sys.path:
@@ -90,8 +93,8 @@ def parse_args(argv=None):
         description="End-to-end GRU auto-encoder test for reviewers.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    p.add_argument("--data-root", required=True,
-                   help="folder that contains <dataset>/data_<freq>/*.csv")
+    p.add_argument("--data-root", default="../gru/",
+                   help="path to your gru model folder")
     p.add_argument("--dataset", default="milandre_data",
                    choices=["milandre_data", "yamaska_data"])
     p.add_argument("--freq", default="4H", choices=["H", "4H", "D"])
@@ -101,13 +104,13 @@ def parse_args(argv=None):
                    choices=["mae", "extreme", "gumbel", "dense", "pp", "focal"])
     p.add_argument("--alpha", type=float, default=2.0,
                    help="threshold (in std-devs) for the extreme loss")
-    p.add_argument("--epochs", type=int, default=5,
+    p.add_argument("--epochs", type=int, default=10,
                    help="keep small for a smoke test; raise to reproduce a paper run")
     p.add_argument("--batch-size", type=int, default=16)
     p.add_argument("--learning-rate", type=float, default=1e-4)
     p.add_argument("--latent-dim", type=int, default=120)
-    p.add_argument("--dropout", type=float, default=0.0)
-    p.add_argument("--recurrent-dropout", type=float, default=0.7)
+    p.add_argument("--dropout", type=float, default=0.7)
+    p.add_argument("--recurrent-dropout", type=float, default=0.0)
     p.add_argument("--patience", type=int, default=10)
     p.add_argument("--train-percent", type=float, default=0.8)
     p.add_argument("--seed", type=int, default=0)
@@ -118,7 +121,6 @@ def parse_args(argv=None):
     p.add_argument("--keep-going", action="store_true",
                    help="run every stage even if an earlier one failed")
     return p.parse_args(argv)
-
 
 def main(argv=None):
     args = parse_args(argv)
@@ -137,7 +139,7 @@ def main(argv=None):
     tag = f"GRU{fc}{fc}{fc}"
     dataset_root = join(args.data_root, args.dataset)        # .../<dataset>
     data_path = join(dataset_root, f"data_{args.freq}")      # .../<dataset>/data_<freq>
-    save_dir = f"{tag}/experiment_{tag}_{args.loss}"         # relative to data_path
+    save_dir = f"{tag}/experiment_{tag}_{args.loss}_testscript"         # relative to data_path
     exp_dir = join(data_path, save_dir)
 
     print("=" * 70)
@@ -278,10 +280,10 @@ def main(argv=None):
         import get_metrics as gm
         for ld in loaders:
             run_args.loader = ld
-            run_args.metric_csv = f"GRU_metrics_{fc}_{args.freq}_{args.loss}_{ld}.csv"
-            run_args.metric_json = f"GRU_metrics_{fc}_{args.freq}_{args.loss}_{ld}.json"
+            run_args.metric_csv = f"test_GRU_metrics_{fc}_{args.freq}_{args.loss}_{ld}.csv"
+            run_args.metric_json = f"test_GRU_metrics_{fc}_{args.freq}_{args.loss}_{ld}.json"
             gm.main(run_args)
-            csv_path = join(data_path, tag, run_args.metric_csv)
+            csv_path = join(exp_dir, run_args.metric_csv)
             with open(csv_path) as fh:
                 lines = [ln.strip() for ln in fh if ln.strip()]
             vals = [float(x) for x in lines[1].split(",")]
