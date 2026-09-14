@@ -15,8 +15,6 @@ The MPS DeeSse package can be found [here](https://github.com/randlab/geone).
 
 All datasets used in this study can be found [here](https://www.dropbox.com/scl/fo/9z66v6y2qmxzldoqebr5a/AL9RviqcOfNo-lQHMh7QuGs?rlkey=6yxpkicxyuotd7xb3ts84gjig&st=bfdq708q&dl=0).
 
-Ask me for the Yamaska monitoring well data. 
-
 An example of the MPS code for generating the missing data for the Yamaska data can be found [here](https://www.dropbox.com/scl/fi/c0zdpxx0zvjt9sql8sigu/MPS_Yamaska_example.ipynb?rlkey=c2pzw0vq1a04oplqcg7l5vuw3&st=p18xejis&dl=0)
 
 ### Package requirements
