@@ -117,8 +117,8 @@ def parse_args(argv=None):
         description="End-to-end Graph WaveNet test for reviewers.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    p.add_argument("--data-root", default="../gwn/",
-                   help="path to your gwn model folder")
+    p.add_argument("--data-root", default="../elf/gwn/",
+                   help="path to your gwn model folder") # Download data elf data from repo
     p.add_argument("--dataset", default="milandre_data",
                    choices=["milandre_data", "yamaska_data"])
     p.add_argument("--freq", default="4H", choices=["H", "4H", "D"])

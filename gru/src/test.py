@@ -93,8 +93,8 @@ def parse_args(argv=None):
         description="End-to-end GRU auto-encoder test for reviewers.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    p.add_argument("--data-root", default="../gru/",
-                   help="path to your gru model folder")
+    p.add_argument("--data-root", default="../elf/gru/",
+                   help="path to your gru model folder") # Download data elf data from repo
     p.add_argument("--dataset", default="milandre_data",
                    choices=["milandre_data", "yamaska_data"])
     p.add_argument("--freq", default="4H", choices=["H", "4H", "D"])
