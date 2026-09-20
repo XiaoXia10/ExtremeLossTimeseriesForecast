@@ -132,8 +132,8 @@ def decile_errors(realy, yhat):
 # ------------------------------------------------------------------ #
 # --- CONFIG: adjust paths/params for your setup -------------------- #
 # ------------------------------------------------------------------ #
-BASE_GWN = r"/Users/xl3138/workspaces/extreme_loss/gwn/"
-BASE_GRU = r"/Users/xl3138/workspaces/extreme_loss/gru/"   # ADJUST if different
+BASE_GWN = r"../trained_data/gwn/"
+BASE_GRU = r"../trained_data/gru/"   # ADJUST if different
 
 # (label, dataset folder name, freq code, forecast horizon, h, n, shift)
 CONFIGS = [

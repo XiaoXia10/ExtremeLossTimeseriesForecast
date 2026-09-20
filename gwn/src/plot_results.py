@@ -12,9 +12,7 @@ import numpy as np
 from data_scaler import destandardize_pred, exp10_pred
 
 def plot_one_loader_segment(args):
-    # names = args.list_names
-    
-    # yhat, realy = destandardize_pred(args.df_path, args.data_dir, args.time_dir, args.loader)
+
     
     yhat, realy = exp10_pred(args.data_path, f"{args.data_path}/{args.data_dir}", f"{args.data_path}/{args.time_dir}", args.loader)
     fig, (ax1, ax2, ax3, ax4) = plt.subplots(4,figsize=(20, 20), sharex=True,)
@@ -46,9 +44,8 @@ def plot_one_loader_segment(args):
     ax4.tick_params(labelsize=25)
     ax4.legend(fontsize = 25)
     
-    # # plt.savefig(r"G:\My Drive\Extreme_Loss_Function_Manuscript\figures\GWN_model\resampled_"+str(timestep)+"\GWN_forecast"+str(forecast)+"_"+loss+".png")
+    # plt.savefig(r"G:\My Drive\Extreme_Loss_Function_Manuscript\figures\GWN_model\resampled_"+str(timestep)+"\GWN_forecast"+str(forecast)+"_"+loss+".png")
     
-    # yhat, realy = destandardize_pred(args.df_path, args.data_dir, args.time_dir, args.loader)
 
 
 def plot_entire_timerseries(args):
@@ -75,65 +72,14 @@ def plot_entire_timerseries(args):
     plt.ylabel('Discharge (l/s)', fontsize=20) # Milandrine is measured at l/s, the other springs are measured in m^3/s
     plt.legend(fontsize=20)
     plt.axis("equal")  
-    # for i in range(0, df_all_yhat.shape[1]):
-        
-    #     plt.figure(figsize=(25,5))
-    #     plt.plot(df_all_realy.index, df_all_realy.iloc[:,i], label="True")
-    #     plt.plot(df_all_yhat.index, df_all_yhat.iloc[:,i], label="Pred")
-    #     plt.title(names[i], fontsize=20)
-    #     plt.xlabel('Date', fontsize=20)
-    #     plt.ylabel('Discharge', fontsize=25)
-    #     plt.legend()
+
 
 def cross_plot(args):
     path = r"G:\My Drive\Extreme_Loss_Function_Manuscript\figures\Milandrine_karst\GWN\resampled_"+str(freq)
     
-    # yhat_ext, realy = destandardize_pred(args.df_path, args.data_dir_ext, args.time_dir, args.loader)
     yhat_ext, realy = destandardize_pred(f"{args.data_path}/{args.df_path}", f"{args.data_path}/{args.data_dir_ext}", f"{args.data_path}/{args.time_dir}", args.loader)
     yhat_mae, _ = destandardize_pred(f"{args.data_path}/{args.df_path}", f"{args.data_path}/{args.data_dir_mae}", f"{args.data_path}/{args.time_dir}", args.loader)
-    
-    # fig, axes = plt.subplots(2,2, figsize=(20, 20))
-    
-    # axes[0,0].plot(realy.iloc[:,0], yhat_mae.iloc[:,0], "o", color="blue", label="Milandrine - MAE Loss")
-    # axes[0,0].plot(realy.iloc[:,0], yhat_ext.iloc[:,0],  "*", color="orange", label="Milandrine - EXT Loss")
-    # axes[0,0].plot([0,realy.iloc[:,0].max()], [0,realy.iloc[:,0].max()], "k--", linewidth = 3)
-    # axes[0,0].set_xlabel("Measured (l/s)", fontsize = 25)
-    # axes[0,0].set_ylabel("Predicted (l/s)", fontsize = 25)
-    # axes[0,0].set(xlim=(0,realy.iloc[:,0].max()), ylim=(0,realy.iloc[:,0].max()))
-    
-    # axes[0,1].plot(realy.iloc[:,1], yhat_mae.iloc[:,1], "o",  color="blue", label="Bâme - MAE Loss")
-    # axes[0,1].plot(realy.iloc[:,1], yhat_ext.iloc[:,1],  "*", color="orange", label="Bâme - EXT Loss")
-    # axes[0,1].plot([0,realy.iloc[:,1].max()], [0,realy.iloc[:,1].max()], "k--", linewidth = 3)
-    # axes[0,1].set_xlabel("Measured (l/s)", fontsize = 25)
-    # axes[0,1].set_ylabel("Predicted (l/s)", fontsize = 25)
-    # axes[0,1].set(xlim=(0,realy.iloc[:,1].max()), ylim=(0,realy.iloc[:,1].max()))
-    
-    # axes[1,0].plot(realy.iloc[:,2], yhat_mae.iloc[:,2], "o",  color="blue", label="Saivu - MAE Loss")
-    # axes[1,0].plot(realy.iloc[:,2], yhat_ext.iloc[:,2],  "*", color="orange",label="Saivu - EXT Loss")
-    # axes[1,0].plot([0,realy.iloc[:,2].max()], [0,realy.iloc[:,2].max()], "k--", linewidth = 3)
-    # axes[1,0].set_xlabel("Measured (l/s)", fontsize = 25)
-    # axes[1,0].set_ylabel("Predicted (l/s)", fontsize = 25)
-    # axes[1,0].set(xlim=(0,realy.iloc[:,2].max()), ylim=(0,realy.iloc[:,2].max()))
-    
-    # axes[1,1].plot(realy.iloc[:,3], yhat_mae.iloc[:,3], "o",  color="blue", label="Font - MAE Loss")
-    # axes[1,1].plot(realy.iloc[:,3], yhat_ext.iloc[:,3],  "*", color="orange", label="Font - EXT Loss")
-    # axes[1,1].plot([0,realy.iloc[:,3].max()], [0,realy.iloc[:,3].max()], "k--", linewidth = 3)
-    # axes[1,1].set_xlabel("Measured (l/s)", fontsize = 25)
-    # axes[1,1].set_ylabel("Predicted (l/s)", fontsize = 25)
-    # axes[1,1].set(xlim=(0,realy.iloc[:,3].max()), ylim=(0,realy.iloc[:,3].max()))
-    
-    # axes[0,0].tick_params(labelsize=25)
-    # axes[0,0].legend(fontsize = 25)
-    # axes[0,1].tick_params(labelsize=25)
-    # axes[0,1].legend(fontsize = 25)
-    # axes[1,0].tick_params(labelsize=30)
-    # axes[1,0].legend(fontsize = 30)
-    # axes[1,1].tick_params(labelsize=30)
-    # axes[1,1].legend(fontsize = 230)
-    # plt.suptitle("GWN - "+ " Forecast Length " + str(forecast) +"Time Steps", fontsize = 35)
-    # plt.tight_layout(pad=2.0)
-    # plt.savefig(join(path, "GWN_forecast"+str(forecast)+"_CP.png"))
-    
+   
     
     fig, axes = plt.subplots(1,2, figsize=(20, 10))
 
@@ -162,51 +108,7 @@ def cross_plot(args):
 
          
 def plot_compare(args):
-    
-    # path = r"G:\My Drive\Extreme_Loss_Function_Manuscript\figures\Milandrine_karst\GWN\resampled_"+str(timestep)
-    
-    # path ="/Users/xl3138/Library/CloudStorage/GoogleDrive-mxxliang@gmail.com/My Drive/Neuchatel_Project/Milandre/python_codes/improved_graph_wavenet"
-    
-    # yhat_ext, realy = destandardize_pred(args.data_path, f"{args.data_path}/{args.data_dir_ext}", f"{args.data_path}/{args.time_dir}", args.loader)
-    # yhat_mae, _ = destandardize_pred(f"{args.data_path}/{args.df_path}", f"{args.data_path}/{args.data_dir_mae}", f"{args.data_path}/{args.time_dir}", args.loader)
-    
-    # yhat_ext, realy = exp10_pred(args.data_path, f"{args.data_path}/{args.data_dir_ext}", f"{args.data_path}/{args.time_dir}", args.loader)
-    # yhat_mae, _ = exp10_pred(f"{args.data_path}/{args.df_path}", f"{args.data_path}/{args.data_dir_mae}", f"{args.data_path}/{args.time_dir}", args.loader)
-    
-    # fig, (ax1, ax2, ax3, ax4) = plt.subplots(4,figsize=(20, 20), sharex=True,)
 
-    # ax1.plot(realy.iloc[:,0],  "o--", color = "dimgray", label="Milandrine - Measured", linewidth = 3)
-    # ax1.plot(yhat_ext.iloc[:,0], "orange", label="Milandrine - EXT Loss", linewidth = 3)
-    # ax1.plot(yhat_mae.iloc[:,0], "blue", label="Milandrine - MAE Loss", linewidth = 3)
-    # ax1.set_ylabel("Discharge (l/s)", fontsize = 25)
-    # ax1.set_title("GWN - "+ " Forecast Length " + str(forecast), fontsize = 35)
-    
-    # ax2.plot(realy.iloc[:,1], "o--", color = "dimgray", label="Bâme - Measured", linewidth = 3)
-    # ax2.plot(yhat_ext.iloc[:,1], "orange", label="Bâme - EXT Loss", linewidth = 3)
-    # ax2.plot(yhat_mae.iloc[:,1], "blue", label="Bâme - MAE Loss", linewidth = 3)
-    # ax2.set_ylabel("Discharge (l/s)", fontsize = 25)
-    
-    # ax3.plot(realy.iloc[:,2], "o--", color = "dimgray", label="Saivu - Measured", linewidth = 3)
-    # ax3.plot(yhat_ext.iloc[:,2], "orange", label="Saivu - EXT Loss", linewidth = 3)
-    # ax3.plot(yhat_mae.iloc[:,2], "blue", label="Saivu - MAE Loss", linewidth = 3)
-    # ax3.set_ylabel("Discharge (l/s)", fontsize = 25)
-    
-    # ax4.plot(realy.iloc[:,3], "o--", color = "dimgray", label="Font - Measured", linewidth = 3)
-    # ax4.plot(yhat_ext.iloc[:,3], "orange", label="Font - EXT Loss", linewidth = 3)
-    # ax4.plot(yhat_mae.iloc[:,3], "blue", label="Font - MAE Loss", linewidth = 3)
-    # ax4.set_ylabel("Discharge (l/s)", fontsize = 25)
-    # ax4.set_xlabel("Date", fontsize = 25)
-    
-    # ax1.tick_params(labelsize=25)
-    # ax1.legend(fontsize = 25)
-    # ax2.tick_params(labelsize=25)
-    # ax2.legend(fontsize = 25)
-    # ax3.tick_params(labelsize=25)
-    # ax3.legend(fontsize = 25)
-    # ax4.tick_params(labelsize=25)
-    # ax4.legend(fontsize = 25)
-    # plt.savefig(join(path, "GWN_forecast"+str(forecast)+".png"))
-    
     fig, (ax3, ax4) = plt.subplots(2,figsize=(20, 20), sharex=True,)
     
     ax3.plot(realy.iloc[:,2], "--", color = "k", label="Saivu - Meas", linewidth = 3)
@@ -228,14 +130,6 @@ def plot_compare(args):
     
 def generate_plot(args):
     
-    # if args.one_loader == True:
-    #     plot_one_loader_segment(args)
-    
-    # else:
-    #     plot_entire_timerseries(args)
-        
-    # cross_plot(args)
-    # plot_compare(args)
     plot_one_loader_segment(args)
     
     
@@ -258,13 +152,9 @@ if __name__ == "__main__":
     parser.add_argument("--data_dir_ext", type=str, default="GWN_"+str(forecast)+"/experiment_"+str(forecast)+"_extreme", help="Model predicted data directory.")
     parser.add_argument("--data_dir_mae", type=str, default="GWN_"+str(forecast)+"/experiment_"+str(forecast)+"_mae", help="Model predicted data directory.")
 
-    # parser.add_argument("--df_path", type=str, default="data_"+str(freq)+"", help="Training and testing data directory.",)
-    
-    # parser.add_argument("--list_names", type=list, default=["Milandrine","Bâme","Saivu","Font" ], help="List of names of the monitoring stations",) #Keep double quotes or s**t
-    parser.add_argument("--one_loader", default=True, type=str, help="If true, will only plot the specified loader type",)
     parser.add_argument("--loader", type=str, default="test", help="Type of loaders - train, val, test.",)
     
-    parser.add_argument("--data_path", type=str, default="/Users/xl3138/workspaces/extreme_loss/gwn/"+dataset+"/data_"+str(freq), help="Data path")
+    parser.add_argument("--data_path", type=str, default="../gwn/"+dataset+"/data_"+str(freq), help="Data path")
     
     args = parser.parse_args()
 

@@ -62,8 +62,6 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
     
-    # parser.add_argument("--df_path", type=str, default="data_"+timestep, help="df path",)
-    
     parser.add_argument("--seq_length_x", type=int, default=seq_length_x, help="X Sequence Length.",)
     parser.add_argument("--seq_length_y", type=int, default=seq_length_y, help="Y Sequence Length.",)
     parser.add_argument("--shift", type=int, default=shift, help="Default is seq_length_x", ) # this is a sequence window shift
@@ -75,12 +73,10 @@ if __name__ == "__main__":
     parser.add_argument("--data_dir_ext", type=str, default="GRU"+str(seq_length_x)+str(seq_length_y)+str(shift)+"/experiment_GRU"+str(seq_length_x)+str(seq_length_y)+str(shift)+"_extreme", help="Model predicted data directory.")
     parser.add_argument("--data_dir_mae", type=str, default="GRU"+str(seq_length_x)+str(seq_length_y)+str(shift)+"/experiment_GRU"+str(seq_length_x)+str(seq_length_y)+str(shift)+"_mae", help="Model predicted data directory.")
 
-    # parser.add_argument("--list_names", type=list, default=["Milamont","Bâme","Saivu","Font" ], help="List of names for measuring stations",) #Keep double quotes or sh*t
-    
     parser.add_argument("--one_loader", default=True, type=str, help="If true, will only plot the specified loader type.",)
     parser.add_argument("--loader", type=str, default="test", help="Type of loaders - train, val, test.",)
     
-    parser.add_argument("--data_path", type=str, default="/Users/xl3138/workspaces/extreme_loss/gru/"+dataset+"/data_"+freq, help="Data path")
+    parser.add_argument("--data_path", type=str, default="../gru/"+dataset+"/data_"+freq, help="Data path")
     
     args = parser.parse_args()
 
