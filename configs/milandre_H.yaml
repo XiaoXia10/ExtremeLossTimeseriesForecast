@@ -1,0 +1,48 @@
+# =============================================================================
+# Milandre karst spring discharge (4 stations), hourly
+# Run with:   python run.py --config configs/milandre_H.yaml
+# Preview:    python run.py --config configs/milandre_H.yaml --dry-run
+# =============================================================================
+
+# ---- What to run ------------------------------------------------------------
+model: gru                 # gru = GRU auto-encoder | gwn = Graph WaveNet
+dataset: milandre_data      # Milandre karst discharge (l/s)
+freq: H                    # hourly (H) or 4-hourly (4H)
+forecast: 6                # forecast length in time steps: 6 | 9 | 12 (as in the paper)
+
+# Loss function(s): uncomment every loss you want to run.
+# Each one is trained and evaluated separately, with its own paper settings.
+loss:
+  - extreme                #   extreme loss (this study)
+  # - mae                  #   mean absolute error (baseline)
+  # - focal                #   Focal-R loss
+  # - dense                #   DenseLoss (density-based weights)
+  # - gumbel               #   Gumbel loss
+  # - pp                   #   plotting-position loss
+
+# Pipeline steps, run in this order:
+#   prepare = build input windows from the CSVs
+#   train   = train the model (saves the best model)
+#   predict = predict train/val/test with the saved model
+#   metrics = RMSE, MAE, MSE, MAPE, NSE, KGE
+#   plot    = measured vs predicted figures
+# To score an already trained model without retraining: [predict, metrics]
+steps: [prepare, train, predict, metrics, plot]
+
+# ---- Hyperparameters ----------------------------------------------------------
+# paper   = the exact settings of the paper run for this model/dataset/freq/
+#           forecast/loss (gru/configs/paper_runs.csv, gwn/configs/paper_runs.csv)
+# default = the scripts' built-in defaults (needed for forecasts other than 6/9/12)
+hyperparameters: paper
+
+# Optional: change individual settings on top of the above. Examples:
+#   GRU: epochs, batch_size, latent_dim, dropout, recurrent_dropout, patience, alpha, seed
+#   GWN: epochs, batch_size, weight_decay, dropout, nhid, es_patience, alpha, seed, device
+overrides:
+  seed: 0
+  # epochs: 5              # e.g. a quick test run
+
+# ---- Optional -----------------------------------------------------------------
+# data_root: /path/to/data # folder holding <dataset>/data_<freq>/ (default: <repo>/gru or <repo>/gwn)
+# exp_suffix: _seed0       # appended to the experiment folder name
+# keep_going: false        # true = continue with the next loss if one fails

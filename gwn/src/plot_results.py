@@ -16,40 +16,33 @@ current_dir = dirname(abspath(__file__))
 base_dir = dirname(current_dir)
 
 def plot_one_loader_segment(args):
+    """Measured vs predicted for every station of one loader (train/val/test).
 
-    
+    Uses args.loss, args.forecast and (optionally) args.ylabel / args.save_fig.
+    """
     yhat, realy = destandardize_pred(args.data_path, f"{args.data_path}/{args.data_dir}", f"{args.data_path}/{args.time_dir}", args.loader)
-    fig, (ax1, ax2, ax3, ax4) = plt.subplots(4,figsize=(20, 20), sharex=True,)
+    names = list(pd.read_csv(join(args.data_path, "train_val_data.csv"), index_col=0, nrows=1).columns)
+    n = realy.shape[1]
+    ylabel = getattr(args, "ylabel", None) or "Value"
 
-    ax1.plot(realy.index, realy.iloc[:,0], label="Measured - ",  linewidth=3)
-    ax1.plot(yhat.index, yhat.iloc[:,0], label= "Predicted - "+loss+ " loss", linewidth=3)
-    ax1.set_title("GWN - "+ " Forecast Length " + str(forecast), fontsize = 35)
-    ax1.set_ylabel("Discharge (l/s)", fontsize = 25)
-    
-    ax2.plot(realy.index, realy.iloc[:,1], label="Measured - ",  linewidth=3)
-    ax2.plot(yhat.index, yhat.iloc[:,1], label="Predicted - "+loss+ " loss",  linewidth=3)
-    ax2.set_ylabel("Discharge (l/s)", fontsize = 25)
-    
-    ax3.plot(realy.index, realy.iloc[:,2], label="Measured - ", linewidth=3)
-    ax3.plot(yhat.index, yhat.iloc[:,2], label="Predicted - "+loss+ " loss",  linewidth=3)
-    ax3.set_ylabel("Discharge (l/s)", fontsize = 25)
-    
-    ax4.plot(realy.index, realy.iloc[:,3], label="Measured - ",  linewidth=3)
-    ax4.plot(yhat.index, yhat.iloc[:,3], label="Predicted - "+loss+ " loss", linewidth=3)
-    ax4.set_xlabel("Date", fontsize = 25)
-    ax4.set_ylabel("Discharge (l/s)", fontsize = 25)
-    
-    ax1.tick_params(labelsize=25)
-    ax1.legend(fontsize = 25)
-    ax2.tick_params(labelsize=25)
-    ax2.legend(fontsize = 25)
-    ax3.tick_params(labelsize=25)
-    ax3.legend(fontsize = 25)
-    ax4.tick_params(labelsize=25)
-    ax4.legend(fontsize = 25)
-    
-    # plt.savefig(r"G:\My Drive\Extreme_Loss_Function_Manuscript\figures\GWN_model\resampled_"+str(timestep)+"\GWN_forecast"+str(forecast)+"_"+loss+".png")
-    
+    fig, axes = plt.subplots(n, 1, figsize=(20, max(4, 3.5 * n)), sharex=True, squeeze=False)
+    for i, ax in enumerate(axes[:, 0]):
+        ax.plot(realy.index, realy.iloc[:, i], label="Measured", linewidth=2)
+        ax.plot(yhat.index, yhat.iloc[:, i], label="Predicted - " + args.loss + " loss", linewidth=2)
+        ax.set_ylabel(ylabel, fontsize=14)
+        ax.set_title(str(names[i]) if i < len(names) else f"station {i}", fontsize=14)
+        ax.tick_params(labelsize=12)
+        ax.legend(fontsize=12)
+    axes[-1, 0].set_xlabel("Date", fontsize=14)
+    fig.suptitle("GWN - " + args.loss + " loss - forecast length " + str(args.forecast) + " - " + args.loader,
+                 fontsize=18, y=1.0)
+    fig.tight_layout(rect=(0, 0, 1, 0.99))
+
+    save_fig = getattr(args, "save_fig", None)
+    if save_fig:
+        fig.savefig(save_fig, dpi=120, bbox_inches="tight")
+        plt.close(fig)
+    return fig
 
 
 def plot_entire_timerseries(args):
@@ -147,6 +140,10 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
 
+    parser.add_argument("--loss", type=str, default=loss, help="Loss function name (used for labels).")
+    parser.add_argument("--forecast", type=int, default=forecast, help="Forecast length (used for labels).")
+    parser.add_argument("--ylabel", type=str, default="Discharge (l/s)" if dataset == "milandre_data" else "Groundwater level (masl)", help="y-axis label")
+    parser.add_argument("--save_fig", type=str, default=None, help="If set, save the figure to this path.")
     
     parser.add_argument("--data_dir", type=str, default="GWN_"+str(forecast)+"/experiment_"+str(forecast)+"_"+loss, help="Model predicted data directory.")
     parser.add_argument("--time_dir", type=str, default="GWN_"+str(forecast), help="Directory for time.",)
