@@ -8,9 +8,13 @@ Getting Training data
 import pandas as pd
 import numpy as np
 import argparse
-from os.path import join
+from os.path import join, dirname, abspath
 import os
 from data_scaler import standardize_df
+
+# Repo-relative default paths: <repo>/gru/src/this_file.py -> base_dir = <repo>/gru
+current_dir = dirname(abspath(__file__))
+base_dir = dirname(current_dir)
 
 def sequence_data_preparation(args, df):
     
@@ -98,10 +102,9 @@ if __name__ == "__main__":
     parser.add_argument('--train_percent', type=float, default=0.8, help='The percentage of data used for model training')
     parser.add_argument("--scale_data", type=bool, default=True, help="Data scaling",)
     
-    parser.add_argument("--data_dir", type=str, default="/Users/xl3138/workspaces/extreme_loss/gru/"+dataset, help="Data dir")
+    parser.add_argument("--data_dir", type=str, default=join(base_dir, dataset), help="Data dir: <base_dir>/<dataset>")
     
     args = parser.parse_args()
-    if not os.path.exists(f"{args.data_dir}/{args.output_dir}"):
-        os.mkdir(f"{args.data_dir}/{args.output_dir}")
+    os.makedirs(f"{args.data_dir}/{args.output_dir}", exist_ok=True)
         
     main(args)

@@ -5,6 +5,11 @@ Created on Wed May 29 13:52:34 2024
 @author: Xiao Xia Liang
 """
 import argparse
+from os.path import join, dirname, abspath
+
+# Repo-relative default paths: <repo>/gru/src/this_file.py -> base_dir = <repo>/gru
+current_dir = dirname(abspath(__file__))
+base_dir = dirname(current_dir)
 
 def get_shared_arg_parser():
     
@@ -41,6 +46,6 @@ def get_shared_arg_parser():
     parser.add_argument("--save_dir", type=str, default= "GRU"+str(seq_length_x)+str(seq_length_y)+str(shift)+"/experiment_GRU"+str(seq_length_x)+str(seq_length_y)+str(shift)+"_"+loss, help="Save Path")
     parser.add_argument("--save_model_name", type=str, default="GRU_best_model.h5", help="Best saved model name")
    
-    parser.add_argument("--data_path", type=str, default="/Users/xl3138/workspaces/extreme_loss/gru/"+dataset+"/data_"+freq, help="Data path")
+    parser.add_argument("--data_path", type=str, default=join(base_dir, dataset, "data_"+freq), help="Data path: <base_dir>/<dataset>/data_<freq>")
     
     return parser

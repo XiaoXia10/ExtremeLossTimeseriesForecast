@@ -11,3 +11,9 @@ __pycache__/
 .Trashes
 ehthumbs.db
 Thumbs.db
+# Datasets (download from Dropbox, see README) and generated outputs
+gru/milandre_data/
+gru/yamaska_data/
+gwn/milandre_data/
+gwn/yamaska_data/
+pp_ranks/

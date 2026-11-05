@@ -6,12 +6,16 @@ Created on Tue Jan 14 20:55:42 2025
 """
 
 from sklearn.metrics import r2_score, root_mean_squared_error, mean_absolute_percentage_error, mean_absolute_error
-from os.path import join
+from os.path import join, dirname, abspath
 import argparse
 from data_scaler import destandardize_pred
 import numpy as np
 import pickle
 from permetrics.regression import RegressionMetric
+
+# Repo-relative default paths: <repo>/gru/src/this_file.py -> base_dir = <repo>/gru
+current_dir = dirname(abspath(__file__))
+base_dir = dirname(current_dir)
 
 
 def main(args):
@@ -33,14 +37,8 @@ def main(args):
     f.write ("RMSE (l/s), MAE (l/s), MSE (l/s), MAPE, NSE, KGE \n" )  
     
     ###### metric mean of all wells
-    for metric in list_metrics:
-        vars()[metric] = np.mean(results[metric])
-        if metric != "KGE":
-            f.write(str(vars()[metric])+",")
-        else:
-            f.write(str(vars()[metric]))
-            f.write("\n") 
-            f.close() 
+    f.write(",".join(str(np.mean(results[metric])) for metric in list_metrics) + "\n")
+    f.close()
         
     # return results
 
@@ -69,7 +67,7 @@ if __name__ == "__main__":
     parser.add_argument("--metric_csv", type=str, default="GRU_metrics_"+str(seq_length_x)+"_"+str(freq)+"_"+loss+".csv", help="metric file name",)
     parser.add_argument("--metric_json", type=str, default="GRU_metrics_"+str(seq_length_x)+"_"+str(freq)+"_"+loss+".json", help="metric file name",)
     
-    parser.add_argument("--data_path", type=str, default="/Users/xl3138/workspaces/extreme_loss/gru/"+dataset+"/data_"+freq, help="Data path")
+    parser.add_argument("--data_path", type=str, default=join(base_dir, dataset, "data_"+freq), help="Data path: <base_dir>/<dataset>/data_<freq>")
     args = parser.parse_args()
 
         

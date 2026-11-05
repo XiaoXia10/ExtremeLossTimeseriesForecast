@@ -7,10 +7,14 @@ Created on Thu May 30 11:30:35 2024
 
 import argparse
 import pandas as pd
-from os.path import join
+from os.path import join, dirname, abspath
 import matplotlib.pyplot as plt
 import numpy as np
 from data_scaler import destandardize_pred
+
+# Repo-relative default paths: <repo>/gru/src/this_file.py -> base_dir = <repo>/gru
+current_dir = dirname(abspath(__file__))
+base_dir = dirname(current_dir)
 
 def plot_one_loader_segment(args):
     
@@ -76,7 +80,7 @@ if __name__ == "__main__":
     parser.add_argument("--one_loader", default=True, type=str, help="If true, will only plot the specified loader type.",)
     parser.add_argument("--loader", type=str, default="test", help="Type of loaders - train, val, test.",)
     
-    parser.add_argument("--data_path", type=str, default="../gru/"+dataset+"/data_"+freq, help="Data path")
+    parser.add_argument("--data_path", type=str, default=join(base_dir, dataset, "data_"+freq), help="Data path: <base_dir>/<dataset>/data_<freq>")
     
     args = parser.parse_args()
 
