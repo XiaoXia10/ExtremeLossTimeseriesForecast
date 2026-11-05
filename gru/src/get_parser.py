@@ -26,6 +26,7 @@ def get_shared_arg_parser():
     # parser.add_argument("--list_names", type=list, default=["Milandrine","Bâme","Saivu","Font" ], help="List of names for measuring stations",) #Keep double quotes or s**t
     
     parser.add_argument('--loss_function', type=str, default=loss, help='Which loss function to call')
+    parser.add_argument('--alpha', type=float, default=2.0, help='Extreme loss threshold, in standard deviations from the mean')
         
     parser.add_argument('--epochs', type=int, default=1000, help='Number of epochs')
     parser.add_argument('--learning_rate', type=float, default=0.0001, help='learning rate')

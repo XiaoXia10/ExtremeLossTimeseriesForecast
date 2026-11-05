@@ -3,8 +3,9 @@ from model import *
 import util
 
 class Trainer():
-    def __init__(self, model: GWNet, scaler, lrate, wdecay, clip=3, lr_decay_rate=.97):
+    def __init__(self, model: GWNet, scaler, lrate, wdecay, clip=3, lr_decay_rate=.97, alpha=1.5):
         self.model = model
+        self.alpha = alpha  # extreme loss threshold
 
         self.optimizer = optim.Adam(self.model.parameters(), lr=lrate, weight_decay=wdecay)
         self.scaler = scaler
@@ -15,7 +16,7 @@ class Trainer():
     @classmethod
     def from_args(cls, model, scaler, args):
         return cls(model, scaler, args.learning_rate, args.weight_decay, clip=args.clip,
-                   lr_decay_rate=args.lr_decay_rate)
+                   lr_decay_rate=args.lr_decay_rate, alpha=args.alpha)
 
     def train(self, input, real_val, loss_function):
         self.model.train()
@@ -26,7 +27,7 @@ class Trainer():
         assert predict.shape[1] == 1
         
     
-        loss, mape, rmse = util.calc_metrics(predict.squeeze(1), real_val, loss_function, null_val=0.0) 
+        loss, mape, rmse = util.calc_metrics(predict.squeeze(1), real_val, loss_function, null_val=0.0, alpha=self.alpha)
         loss.backward()
         
         # if extreme_loss == True:
@@ -51,5 +52,5 @@ class Trainer():
         real = torch.unsqueeze(real_val,dim=1)
         predict = self.scaler.inverse_transform(output)
         predict = torch.clamp(predict, min=0., max=70.)
-        loss, mape, rmse = [x.item() for x in util.calc_metrics(predict, real, loss_function, null_val=0.0)]
+        loss, mape, rmse = [x.item() for x in util.calc_metrics(predict, real, loss_function, null_val=0.0, alpha=self.alpha)]
         return loss, mape, rmse

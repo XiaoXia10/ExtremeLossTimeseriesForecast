@@ -45,7 +45,7 @@ def main(args,
     scaler = data['scaler']
     realy = torch.Tensor(data[f'y_{loader}']).to(device)
     realy = realy.transpose(1,3)[:,0,:,:]
-    met_df, yhat = util.calc_tstep_metrics(model, device, data[f'{loader}_loader'], scaler, realy, args.seq_length, args.loss_function)
+    met_df, yhat = util.calc_tstep_metrics(model, device, data[f'{loader}_loader'], scaler, realy, args.seq_length, args.loss_function, alpha=args.alpha)
     df_pred, df_real = util.make_pred_df_wells(realy, yhat, scaler, args.seq_length, args.shift) # Compile and save the GWN prediction data into a dataframe
    
     # met_df.to_csv(join(save_path, "last_test_metrics.csv"))

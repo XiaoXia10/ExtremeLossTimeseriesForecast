@@ -18,8 +18,8 @@ USAGE
 --------------------------------------------------------------------------------
     python gwn/src/test.py [options]
 
---data-root defaults to the repo's own gwn/ data folder, so the script runs
-with no flags at all. Pass --data-root /path/to/data to point at a different
+--data-root defaults to <repo>/gwn (computed from this file's location), so
+once the data folders are placed there the script runs with no flags at all. Pass --data-root /path/to/data to point at a different
 copy (e.g. a reviewer's downloaded dataset - see README). The expected layout
 underneath it is:
 
@@ -42,12 +42,14 @@ import argparse
 import os
 import sys
 import types
-import pickle
 import random
 import traceback
-from os.path import join, isfile
+from os.path import join, isfile, dirname, abspath
 
-HERE = os.path.dirname(os.path.abspath(__file__))
+# Repo-relative default paths: <repo>/gwn/src/test.py -> base_dir = <repo>/gwn
+current_dir = dirname(abspath(__file__))
+base_dir = dirname(current_dir)
+HERE = current_dir
 if HERE not in sys.path:
     sys.path.insert(0, HERE)
 
@@ -59,18 +61,6 @@ import matplotlib
 matplotlib.use("Agg")
 
 # ---- tiny stand-ins for optional deps that are imported at module load -----
-try:
-    import durbango  # noqa: F401
-except Exception:
-    _d = types.ModuleType("durbango")
-
-    def _pickle_save(obj, path):
-        with open(path, "wb") as fh:
-            pickle.dump(obj, fh)
-
-    _d.pickle_save = _pickle_save
-    sys.modules["durbango"] = _d
-
 try:
     import fastprogress  # noqa: F401
 except Exception:
@@ -117,8 +107,8 @@ def parse_args(argv=None):
         description="End-to-end Graph WaveNet test for reviewers.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    p.add_argument("--data-root", default="../elf/gwn/",
-                   help="path to your gwn model folder") # Download data elf data from repo
+    p.add_argument("--data-root", default=base_dir,
+                   help="folder containing <dataset>/data_<freq>/ (default: <repo>/gwn)")
     p.add_argument("--dataset", default="milandre_data",
                    choices=["milandre_data", "yamaska_data"])
     p.add_argument("--freq", default="4H", choices=["H", "4H", "D"])
@@ -126,12 +116,8 @@ def parse_args(argv=None):
                    help="sequence length = prediction horizon = window shift")
     p.add_argument("--loss", default="extreme",
                    choices=["mae", "mse", "extreme", "gumbel", "dense", "pp", "focal"])
-    p.add_argument("--alpha", type=float, default=2.0,
+    p.add_argument("--alpha", type=float, default=1.5,
                    help="threshold (in std-devs) for the extreme loss")
-    p.add_argument("--scaler", default="log", choices=["log", "zscore"],
-                   help="log = shipped behaviour (log10 forward transform); this also "
-                        "swaps get_metrics' linear de-scaling for the matching exp10 "
-                        "inverse. zscore = standardise instead, get_metrics unchanged.")
     p.add_argument("--epochs", type=int, default=25,
                    help="keep small for a smoke test; raise to reproduce a paper run")
     p.add_argument("--batch-size", type=int, default=16)
@@ -181,7 +167,7 @@ def main(argv=None):
     print("=" * 70)
     print("Graph WaveNet end-to-end test")
     print("=" * 70)
-    for k in ("dataset", "freq", "forecast", "loss", "alpha", "scaler", "epochs",
+    for k in ("dataset", "freq", "forecast", "loss", "alpha", "epochs",
               "batch_size", "learning_rate", "device", "seed"):
         print(f"  {k:16s}: {getattr(args, k)}")
     print(f"  dataset root    : {dataset_root}")
@@ -236,11 +222,7 @@ def main(argv=None):
     # ---- stage 1: compile ---------------------------------------------
     def do_compile():
         import generate_training_data as gtd
-        if args.scaler == "zscore":
-            gtd.log_df = gtd.standardize_df
-            print("    scaler = zscore  (patched generate_training_data.log_df)")
-        else:
-            print("    scaler = log10   (shipped behaviour)")
+        print("    scaler = z-score (standardize_df, as in generate_training_data.py)")
         gen = argparse.Namespace(
             seq_length_x=fc, seq_length_y=fc, shift=fc,
             scale_data=True, train_split=args.train_split,
@@ -274,7 +256,7 @@ def main(argv=None):
         randomadj=False, aptonly=False, addaptadj=False, do_graph_conv=False,
         dropout=args.dropout, in_dim=2, apt_size=10,
         seq_length=fc, shift=fc, nhid=nhid, num_nodes=num_nodes, cat_feat_gc=False,
-        checkpoint=None,
+        checkpoint=None, alpha=args.alpha,
         learning_rate=args.learning_rate, weight_decay=args.weight_decay,
         clip=args.clip, lr_decay_rate=args.lr_decay_rate,
         epochs=args.epochs, n_iters=None, es_patience=args.es_patience,
@@ -282,27 +264,10 @@ def main(argv=None):
         df_path=join(csv_dir, "df.csv"),
     )
 
-    def patch_alpha():
-        if args.loss != "extreme":
-            return
-        import util
-        base = util.extreme_value_loss
-        if getattr(base, "_alpha_patched", False):
-            return
-
-        def extreme_value_loss(y_true, y_pred):
-            return base(y_true, y_pred, alpha=args.alpha)
-
-        extreme_value_loss._alpha_patched = True
-        util.extreme_value_loss = extreme_value_loss
-        print(f"    patched util.extreme_value_loss with alpha={args.alpha}")
-
     # ---- stage 2: train ---------------------------------------------
     def do_train():
-        patch_alpha()
         import train as gwn_train
         import matplotlib.pyplot as plt
-        gwn_train.args = run_args          # train.eval_() reads a module-global `args`
         gwn_train.main(run_args)
         plt.close("all")
         mfile = join(exp_dir, "best_model.pth")
@@ -314,7 +279,6 @@ def main(argv=None):
 
     # ---- stage 3: compile predictions --------------------------
     def do_predict():
-        patch_alpha()
         import compile_model_pred as cmp
         for ld in loaders:
             cmp.main(run_args, ld)
@@ -329,16 +293,11 @@ def main(argv=None):
 
     def do_metrics():
         import get_metrics as gm
-        import data_scaler
-        if args.scaler == "log":
-            gm.destandardize_pred = data_scaler.exp10_pred
-            print("    metrics de-scaling: exp10_pred (matches log10 compile)")
-        else:
-            print("    metrics de-scaling: destandardize_pred (matches zscore compile)")
+        print("    metrics de-scaling: destandardize_pred (matches z-score compile)")
         for ld in loaders:
             m_args = argparse.Namespace(
                 forecast=fc, alpha=args.alpha,
-                data_dir=f"GWN_{fc}/experiment_{fc}_{args.loss}",
+                data_dir=f"GWN_{fc}/experiment_{fc}_{args.loss}_testscript",
                 time_dir=f"GWN_{fc}",
                 loader=ld,
                 metric_csv=f"GWN_metrics_{fc}_{args.freq}_{args.loss}_{ld}.csv",
@@ -378,7 +337,7 @@ def main(argv=None):
         with open(report, "w") as fh:
             fh.write("Graph WaveNet end-to-end reviewer test\n")
             fh.write("=" * 60 + "\n")
-            for k in ("dataset", "freq", "forecast", "loss", "alpha", "scaler",
+            for k in ("dataset", "freq", "forecast", "loss", "alpha",
                       "epochs", "batch_size", "learning_rate", "device", "seed"):
                 fh.write(f"{k:16s}: {getattr(args, k)}\n")
             fh.write(f"dataset root    : {dataset_root}\n\n")
@@ -390,12 +349,11 @@ def main(argv=None):
                 for ld, row in metric_rows.items():
                     fh.write(ld.ljust(8) + "".join(f"{row[m]:12.4f}" for m in METRIC_NAMES) + "\n")
             fh.write("\nNOTES\n")
-            fh.write("- Shipped generate_training_data scales with log10 but shipped\n")
-            fh.write("  get_metrics de-scales linearly; --scaler keeps the pair consistent.\n")
+            fh.write("- Data are z-scored (generate_training_data.standardize_df) and\n")
+            fh.write("  de-scaled with data_scaler.destandardize_pred.\n")
             fh.write("- GWN ran with do_graph_conv=False and addaptadj=False, so the\n")
             fh.write("  adjacency matrix does not affect these numbers.\n")
-            fh.write("- extreme_value_loss default alpha is 1.5 in gwn/src/util.py vs\n")
-            fh.write("  2.0 in gru/src/model.py; this test pins it to --alpha.\n")
+            fh.write("- alpha is passed to the extreme loss via --alpha (GWN default 1.5).\n")
             fh.write("- The upstream code sets no RNG seed; --seed makes runs only\n")
             fh.write("  roughly comparable, not bit-identical.\n")
         print(f"\nreport written: {report}")

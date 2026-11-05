@@ -6,15 +6,19 @@ Created on Tue May 21 10:05:41 2024
 """
 import argparse
 import pandas as pd
-from os.path import join
+from os.path import join, dirname, abspath
 import matplotlib.pyplot as plt
 import numpy as np
 from data_scaler import destandardize_pred, exp10_pred
 
+# Repo-relative default paths: <repo>/gwn/src/this_file.py -> base_dir = <repo>/gwn
+current_dir = dirname(abspath(__file__))
+base_dir = dirname(current_dir)
+
 def plot_one_loader_segment(args):
 
     
-    yhat, realy = exp10_pred(args.data_path, f"{args.data_path}/{args.data_dir}", f"{args.data_path}/{args.time_dir}", args.loader)
+    yhat, realy = destandardize_pred(args.data_path, f"{args.data_path}/{args.data_dir}", f"{args.data_path}/{args.time_dir}", args.loader)
     fig, (ax1, ax2, ax3, ax4) = plt.subplots(4,figsize=(20, 20), sharex=True,)
 
     ax1.plot(realy.index, realy.iloc[:,0], label="Measured - ",  linewidth=3)
@@ -75,8 +79,6 @@ def plot_entire_timerseries(args):
 
 
 def cross_plot(args):
-    path = r"G:\My Drive\Extreme_Loss_Function_Manuscript\figures\Milandrine_karst\GWN\resampled_"+str(freq)
-    
     yhat_ext, realy = destandardize_pred(f"{args.data_path}/{args.df_path}", f"{args.data_path}/{args.data_dir_ext}", f"{args.data_path}/{args.time_dir}", args.loader)
     yhat_mae, _ = destandardize_pred(f"{args.data_path}/{args.df_path}", f"{args.data_path}/{args.data_dir_mae}", f"{args.data_path}/{args.time_dir}", args.loader)
    
@@ -154,7 +156,7 @@ if __name__ == "__main__":
 
     parser.add_argument("--loader", type=str, default="test", help="Type of loaders - train, val, test.",)
     
-    parser.add_argument("--data_path", type=str, default="../gwn/"+dataset+"/data_"+str(freq), help="Data path")
+    parser.add_argument("--data_path", type=str, default=join(base_dir, dataset, "data_"+str(freq)), help="Data path: <base_dir>/<dataset>/data_<freq>")
     
     args = parser.parse_args()
 

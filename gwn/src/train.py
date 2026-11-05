@@ -5,7 +5,8 @@ import time
 import util
 from engine import Trainer
 import os
-from durbango import pickle_save
+import pickle
+import matplotlib.pyplot as plt
 from fastprogress import progress_bar
 
 from model import GWNet
@@ -36,6 +37,10 @@ def main(args, **model_kwargs):
     
     mb = progress_bar(list(range(1, args.epochs + 1)))
 
+    # pp loss needs a look-up table; it only depends on df_path, so build it once
+    if args.loss_function == 'pp':
+        util._get_pp_ranking(args.df_path)
+
     epochs_since_best_loss = 0
     for _ in mb:
         train_loss, train_mape, train_rmse = [], [], []
@@ -45,11 +50,7 @@ def main(args, **model_kwargs):
             trainy = torch.Tensor(y).to(device).transpose(1, 3)
             y_real = trainy[:, 0, :, :]
             if  y_real.max() == 0: continue
-        
-            # pp loss needs a look up table
-            if args.loss_function == 'pp':
-                util._get_pp_ranking(args.df_path)
-                
+
             loss, mape, rmse = engine.train(trainx, y_real, loss_function=args.loss_function)
             train_loss.append(loss)
             train_mape.append(mape)
@@ -57,7 +58,7 @@ def main(args, **model_kwargs):
             if args.n_iters is not None and iter >= args.n_iters:
                 break
         engine.scheduler.step()
-        _, valid_loss, valid_mape, valid_rmse = eval_(data['val_loader'], device, engine)
+        _, valid_loss, valid_mape, valid_rmse = eval_(data['val_loader'], device, engine, args.loss_function)
         m = dict(train_loss=np.mean(train_loss), train_mape=np.mean(train_mape),
                  train_rmse=np.mean(train_rmse), valid_loss=np.mean(valid_loss),
                  valid_mape=np.mean(valid_mape), valid_rmse=np.mean(valid_rmse))
@@ -67,13 +68,13 @@ def main(args, **model_kwargs):
         if m.valid_loss < lowest_loss_yet:
             torch.save(engine.model.state_dict(), best_model_save_path)
             lowest_loss_yet = m.valid_loss
-            epochs_since_best_mae = 0
+            epochs_since_best_loss = 0
         else:
-            epochs_since_best_mae += 1
+            epochs_since_best_loss += 1
         met_df = pd.DataFrame(metrics)
         mb.comment = f'best val_loss: {met_df.valid_loss.min(): .3f}, current val_loss: {m.valid_loss:.3f}, current train loss: {m.train_loss: .3f}'
         met_df.round(6).to_csv(f"{args.data_path}/{args.save}/metrics.csv")
-        if epochs_since_best_mae >= args.es_patience: break
+        if epochs_since_best_loss >= args.es_patience: break
     
     # Metrics on val data
     engine.model.load_state_dict(torch.load(best_model_save_path))
@@ -85,8 +86,10 @@ def main(args, **model_kwargs):
     if args.plot_history == True:
         tr_val = loss_curve(f"{args.data_path}/{args.save}")
         plot_loss_curve(f"{args.data_path}/{args.save}")
+        plt.savefig(f"{args.data_path}/{args.save}/loss_history.png", dpi=150, bbox_inches="tight")
+        plt.close()
 
-def eval_(ds, device, engine):
+def eval_(ds, device, engine, loss_function):
     ### Run validation 
     
     valid_loss = []
@@ -96,7 +99,7 @@ def eval_(ds, device, engine):
     for (x, y) in ds.get_iterator():
         testx = torch.Tensor(x).to(device).transpose(1, 3)
         testy = torch.Tensor(y).to(device).transpose(1, 3)
-        metrics = engine.eval(testx, testy[:, 0, :, :], args.loss_function)
+        metrics = engine.eval(testx, testy[:, 0, :, :], loss_function)
         valid_loss.append(metrics[0])
         valid_mape.append(metrics[1])
         valid_rmse.append(metrics[2])
@@ -125,9 +128,9 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     t1 = time.time()
-    if not os.path.exists(f"{args.data_path}/{args.save}"):
-        os.mkdir(f"{args.data_path}/{args.save}")
-    pickle_save(args, f"{args.data_path}/{args.save}/args.pkl")
+    os.makedirs(f"{args.data_path}/{args.save}", exist_ok=True)
+    with open(f"{args.data_path}/{args.save}/args.pkl", "wb") as fh:
+        pickle.dump(args, fh)
     
     main(args)
                                                                                                                                                        

@@ -8,9 +8,13 @@ import argparse
 import numpy as np
 import os
 import pandas as pd
-from os.path import join
+from os.path import join, dirname, abspath
 from scipy import signal
 from data_scaler import standardize_df, log_df
+
+# Repo-relative default paths: <repo>/gwn/src/this_file.py -> base_dir = <repo>/gwn
+current_dir = dirname(abspath(__file__))
+base_dir = dirname(current_dir)
 
 def _get_leap_years(year_list):
     leaplist=[]
@@ -205,13 +209,11 @@ if __name__ == "__main__":
     parser.add_argument("--shift", type=int, default=forecast, help="Default is seq_length_x", ) # this is a sequence window shift
     parser.add_argument("--train_split", type=float, default=0.8, help="The percentage split for training and validation",)
     parser.add_argument("--scale_data", type=bool, default=True, help="Data scaling",)
-    parser.add_argument("--data_path", type=str, default="/Users/xl3138/workspaces/extreme_loss/gwn/"+dataset, help="Data dir")
+    parser.add_argument("--data_path", type=str, default=join(base_dir, dataset), help="Data dir: <base_dir>/<dataset>")
     
     args = parser.parse_args()
-    if not os.path.exists(f"{args.data_path}/{args.output_dir}"):
-        os.mkdir(f"{args.data_path}/{args.output_dir}")
+    os.makedirs(f"{args.data_path}/{args.output_dir}", exist_ok=True)
         
     x_train, y_train, x_val, y_val, x_test, y_test = generate_train_val_test(args)
     # generate_train_val_test(args)
-    
-    # np.save(r"/Users/xl3138/workspaces/extreme_loss/gwn/milandre_data/data_4H/x_train_4h.npy", x_train)
+

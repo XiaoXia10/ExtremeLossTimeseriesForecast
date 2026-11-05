@@ -2,6 +2,7 @@ import argparse
 import pickle
 import numpy as np
 import os
+from os.path import join, dirname, abspath
 
 import pandas as pd
 import scipy.sparse as sp
@@ -10,6 +11,10 @@ import torch.nn.functional as F
 
 from scipy.sparse import linalg
 from denseweight import DenseWeight
+
+# Repo-relative default paths: <repo>/gwn/src/this_file.py -> base_dir = <repo>/gwn
+current_dir = dirname(abspath(__file__))
+base_dir = dirname(current_dir)
 
 # DEFAULT_DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -368,19 +373,6 @@ def pp_loss(y_true, y_pred):
 
     return pp_loss
 
-##### Test Loss####
-
-# dat = np.load(r"/Users/xl3138/workspaces/extreme_loss/gwn/milandre_data/data_4H/x_train_4h.npy")
-# dat_path = r"/Users/xl3138/workspaces/extreme_loss/gwn/milandre_data/data_4H/Milandre_df_4H.csv"
-
-# y_true = dat[1,:,:,:]
-
-# y_pred = dat[1,:,:,:]+0.1
-
-# df_ts = _get_df_ts(dat_path)
-
-# loss = focal_r_loss(y_true, y_pred)
-
 # def calc_metrics_extreme(preds, labels, null_val=0.):
 #     if np.isnan(null_val):
 #         mask = ~torch.isnan(labels)
@@ -420,7 +412,7 @@ def pp_loss(y_true, y_pred):
 #     return mae, mape, rmse
 
 
-def calc_metrics(y_pred, y_true, loss_fun, null_val=np.nan):
+def calc_metrics(y_pred, y_true, loss_fun, null_val=np.nan, alpha=1.5):
     
 # def calc_metrics(y_pred, y_true, loss_fun, null_val=0.0):
     if np.isnan(null_val):
@@ -449,7 +441,7 @@ def calc_metrics(y_pred, y_true, loss_fun, null_val=np.nan):
         rmse = torch.sqrt(mse)
         
     if loss_fun =="extreme":
-        extreme = extreme_value_loss(y_true, y_pred)
+        extreme = extreme_value_loss(y_true, y_pred, alpha=alpha)
         loss, mape, mse= [mask_and_fillna(l, mask) for l in [extreme, mape, mse]]
         rmse = torch.sqrt(mse)
         
@@ -482,7 +474,7 @@ def mask_and_fillna(loss, mask):
     return torch.mean(loss)
 
 
-def calc_tstep_metrics(model, device, test_loader, scaler, realy, seq_length, loss_function) -> pd.DataFrame:
+def calc_tstep_metrics(model, device, test_loader, scaler, realy, seq_length, loss_function, alpha=1.5) -> pd.DataFrame:
     model.eval()
     outputs = []
     for _, (x, __) in enumerate(test_loader.get_iterator()):
@@ -497,7 +489,7 @@ def calc_tstep_metrics(model, device, test_loader, scaler, realy, seq_length, lo
         pred = scaler.inverse_transform(yhat[:, :, i])
         pred = torch.clamp(pred, min=0., max=70.)
         real = realy[:, :, i]
-        test_met.append([x.item() for x in calc_metrics(pred, real, loss_function)])
+        test_met.append([x.item() for x in calc_metrics(pred, real, loss_function, alpha=alpha)])
     test_met_df = pd.DataFrame(test_met, columns=['mae', 'mape', 'rmse']).rename_axis('t')
     
     
@@ -561,6 +553,7 @@ def get_shared_arg_parser():
     parser = argparse.ArgumentParser()
    
     parser.add_argument('--loss_function', type=str, default=loss, help=' Use strings [mae, extreme, focal, pp, dense, gumbel]')
+    parser.add_argument('--alpha', type=float, default=1.5, help='Extreme loss threshold, in standard deviations from the mean')
     # parser.add_argument('--device', type=str, default='cuda', help='')
     parser.add_argument('--adjdata', type=str, default='adj_mat/adj_mx.npy', help='adj matrix path')
     # parser.add_argument('--adjtype', type=str, default='doubletransition', help='adj type', choices=ADJ_CHOICES)
@@ -584,9 +577,9 @@ def get_shared_arg_parser():
     parser.add_argument('--fill_zeroes', action='store_true')
     parser.add_argument('--checkpoint', type=str, help='Create checkpoints for model training')
     
-    parser.add_argument("--df_path", type=str, default="/Users/xl3138/workspaces/extreme_loss/gwn/"+dataset+"/data_"+freq+"/df.csv", help="df path")
+    parser.add_argument("--df_path", type=str, default=join(base_dir, dataset, "data_"+freq, "df.csv"), help="df path: <base_dir>/<dataset>/data_<freq>/df.csv")
     
-    parser.add_argument("--data_path", type=str, default="/Users/xl3138/workspaces/extreme_loss/gwn/"+dataset, help="Data path")
+    parser.add_argument("--data_path", type=str, default=join(base_dir, dataset), help="Data path: <base_dir>/<dataset>")
     
     return parser
 

@@ -215,26 +215,8 @@ def main(argv=None):
         metric_json=f"GRU_metrics_{fc}_{args.freq}_{args.loss}.json",
     )
 
-    def patch_alpha():
-        """Route the chosen --alpha into model.extreme_value_loss (its signature
-        hard-codes alpha=2.0 and it is handed to model.compile by name)."""
-        if args.loss != "extreme":
-            return
-        import model as gru_model
-        base = gru_model.extreme_value_loss
-        if getattr(base, "_alpha_patched", False):
-            return
-
-        def extreme_value_loss(y_true, y_pred):
-            return base(y_true, y_pred, alpha=args.alpha)
-
-        extreme_value_loss._alpha_patched = True
-        gru_model.extreme_value_loss = extreme_value_loss
-        print(f"    patched model.extreme_value_loss with alpha={args.alpha}")
-
     # ---- stage 2: train --------------------------------------------------
     def do_train():
-        patch_alpha()
         import train as gru_train
         import matplotlib.pyplot as plt
         os.makedirs(exp_dir, exist_ok=True)
@@ -248,7 +230,6 @@ def main(argv=None):
 
     # ---- stage 3: compile predictions --------------------------------
     def do_predict():
-        patch_alpha()
         import compile_model_pred_data as cmp
         cmp.main(run_args)
         for ld in loaders:
@@ -319,9 +300,7 @@ def main(argv=None):
             fh.write("\nNOTES\n")
             fh.write("- The upstream code sets no RNG seed; --seed makes runs only\n")
             fh.write("  roughly comparable, not bit-identical.\n")
-            fh.write("- extreme_value_loss default alpha is 2.0 here (gru/src/model.py)\n")
-            fh.write("  vs 1.5 in gwn/src/util.py; a third unused copy sits in\n")
-            fh.write("  gru/src/loss_functions.py. This test pins alpha to --alpha.\n")
+            fh.write("- alpha is passed to the extreme loss via --alpha (GRU default 2.0).\n")
         print(f"\nreport written: {report}")
     except Exception as exc:  # noqa: BLE001
         print(f"(could not write report: {exc})")

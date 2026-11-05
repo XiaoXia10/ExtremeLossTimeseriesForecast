@@ -213,7 +213,13 @@ def auto_encoder_gru(train_x, train_y, args):
         
     elif args.loss_function == "extreme":
         print("Extreme Loss function is used")
-        model.compile(optimizer=adam_optimizer, loss=extreme_value_loss)
+        alpha = args.alpha
+        print(f"Extreme loss alpha = {alpha}")
+
+        def extreme_loss(y_true, y_pred):
+            return extreme_value_loss(y_true, y_pred, alpha=alpha)
+
+        model.compile(optimizer=adam_optimizer, loss=extreme_loss)
     
     elif args.loss_function == "pp":
         print("pp Loss function is used")
