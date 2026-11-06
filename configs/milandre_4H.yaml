@@ -1,7 +1,7 @@
 # =============================================================================
 # Milandre karst spring discharge (4 stations), 4-hourly
-# Run with:   python run.py --config configs/milandre_4H.yaml
-# Preview:    python run.py --config configs/milandre_4H.yaml --dry-run
+# Run with:   python run_experiment.py --config configs/milandre_4H.yaml
+# Preview:    python run_experiment.py --config configs/milandre_4H.yaml --dry-run
 # =============================================================================
 
 # ---- What to run ------------------------------------------------------------

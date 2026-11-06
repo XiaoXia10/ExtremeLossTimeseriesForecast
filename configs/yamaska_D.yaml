@@ -1,7 +1,7 @@
 # =============================================================================
 # Yamaska groundwater levels (18 wells), daily
-# Run with:   python run.py --config configs/yamaska_D.yaml
-# Preview:    python run.py --config configs/yamaska_D.yaml --dry-run
+# Run with:   python run_experiment.py --config configs/yamaska_D.yaml
+# Preview:    python run_experiment.py --config configs/yamaska_D.yaml --dry-run
 # =============================================================================
 
 # ---- What to run ------------------------------------------------------------

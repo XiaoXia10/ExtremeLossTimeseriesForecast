@@ -8,8 +8,8 @@ and loss function(s) - and this script fills in the hyperparameters used in the
 paper (gru/configs/paper_runs.csv, gwn/configs/paper_runs.csv), then runs the
 pipeline of the chosen model once per loss function.
 
-    python run.py --config configs/yamaska_D.yaml
-    python run.py --config configs/yamaska_D.yaml --dry-run    # show what would run
+    python run_experiment.py --config configs/yamaska_D.yaml
+    python run_experiment.py --config configs/yamaska_D.yaml --dry-run    # show what would run
 
 See configs/*.yaml for commented examples.
 """
