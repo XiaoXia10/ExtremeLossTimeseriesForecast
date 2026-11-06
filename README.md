@@ -339,7 +339,7 @@ Without `--paper-settings`, every option you don't give takes the default value 
 
 [gru/configs/paper_runs.csv](gru/configs/paper_runs.csv) and [gwn/configs/paper_runs.csv](gwn/configs/paper_runs.csv) hold one row for each of the 54 paper runs per model (3 dataset/resolution combinations × forecasts 6, 9, 12 × 6 losses). Each row gives:
 - the hyperparameters, read from the settings file (`args.pkl`) saved with the original run;
-- the test-set RMSE, NSE and KGE of that run (`saved_rmse`, `saved_nse`, `saved_kge`);
+- the test set RMSE, NSE and KGE of that run (`saved_rmse`, `saved_nse`, `saved_kge`);
 - the original run folder (`source_run`).
 
 You can open these files in Excel to look up a configuration.
@@ -443,7 +443,6 @@ Running those scripts gave clearly worse results than the paper. The current ver
 |---|---|
 | `extreme` | **Extreme loss (this study).** A weighted mean absolute error. Values more than `alpha` standard deviations from the mean are treated as extremes. Their errors and those of the other values are weighted differently, with weights computed from the spread of the measured data (see the paper). In the paper, `alpha` = 2.0 for the GRU and 1.5 for Graph WaveNet. |
 | `mae` | Mean absolute error (baseline). |
-| `mse` | Mean squared error (Graph WaveNet only). |
 | `focal` | Focal-R loss: absolute error multiplied by a factor that grows with the error, so large errors count more. |
 | `dense` | DenseLoss: squared error weighted by the rarity of the measured value (inverse density, via `denseweight`), so rare values count more. |
 | `gumbel` | Gumbel loss: squared error multiplied by `(1 - exp(-squared error))`, inspired by the Gumbel extreme-value distribution. |
@@ -467,7 +466,7 @@ The dataset names are fixed to `milandre_data` and `yamaska_data`, so the simple
 3. Use `hyperparameters: default`, because the paper settings were tuned for our data. Choose `epochs`, `latent_dim` and the other settings under `overrides`.
 4. For the `pp` loss, also provide `df.csv` (the full record). For Graph WaveNet, an identity adjacency matrix is written automatically if `adj_mat/adj_mx.npy` is missing.
 
-The y-axis labels of the figures still say "Discharge (l/s)" or "Groundwater level (masl)".
+The y-axis labels of the figures still say "Discharge (l/s)" or "Groundwater level (masl)". You will need to change the labels for your dataset(s).
 
 ---
 
