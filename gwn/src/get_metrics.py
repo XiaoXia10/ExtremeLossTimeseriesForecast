@@ -41,7 +41,9 @@ def get_metrics(args):
         pickle.dump(results, file)
         
     f = open(join(f'{args.data_path}/{args.data_dir}', args.metric_csv), 'w')
-    f.write ("RMSE (l/s), MAE (l/s), MSE (l/s), MAPE, NSE, KGE \n" )  
+    # units of the data: Milandre = spring discharge (l/s), Yamaska = groundwater level (m)
+    unit = "m" if "yamaska_data" in str(args.data_path) else "l/s"
+    f.write(f"RMSE ({unit}), MAE ({unit}), MSE ({unit})^2, MAPE, NSE, KGE \n")
     
     ###### metric mean of all wells
     f.write(",".join(str(np.mean(results[metric])) for metric in list_metrics) + "\n")
