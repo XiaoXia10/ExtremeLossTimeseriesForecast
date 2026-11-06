@@ -4,7 +4,7 @@ Xiao Xia Liang, Dany Lauzon, Julien Straubhaar, Erwan Gloaguen, Maxime Claprood,
 
 This repository contains the code for the **extreme loss function**, a loss function that helps deep neural networks (DNNs) forecast extreme values in regression problems. We test it on two hydrogeological forecasting problems:
 
-- **Milandre** (Switzerland): discharge (l/s) of 4 karst springs, at hourly (`H`) and 4-hourly (`4H`) resolution.
+- **Milandre** (Switzerland): discharge (l/s) of 4 stations within the Milandre catchment, at hourly (`H`) and 4-hourly (`4H`) resolution.
 - **Yamaska** (Québec, Canada): groundwater levels (masl) in 18 monitoring wells, at daily (`D`) resolution.
 
 Two models are used, and each is trained with six loss functions (the extreme loss and five others for comparison):
